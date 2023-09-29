@@ -177,7 +177,7 @@ def main_page() -> None:
     with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
         with ui.grid(columns=2).classes('items-left'):
             ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white').tooltip('Menu')
-            ui.label("Creator Mode").classes('mt-1 text-xl')
+            ui.button(text='Creator Mode', on_click= lambda: ui.open(main_page)).props('flat color=white').tooltip('Home')
 
         with ui.grid(columns=2).classes('items-right'):
             ui.switch(on_change=lambda: ui.open(learner_page)).classes('item-right').tooltip('Toggled to Creator Mode')
@@ -190,39 +190,17 @@ def main_page() -> None:
     # LEFT DRAWER
     with ui.left_drawer(fixed=True).style('background-color: #d7e3f4').props('bordered') as left_drawer:
         with ui.grid(rows=2):
-            # COURSE DIALOG
-            with ui.dialog() as course, ui.card():
-                ui.label('Create a Course').classes('font-bold text-lg')
-                ui.separator()
-                course_title = ui.input(label='Title').props('size=40')
-                course_video_desc = ui.input(label='Video Description').props('size=40')
-                course_video = ui.upload(auto_upload=True, max_files=1, on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
+            # # COURSE DIALOG
+            # with ui.dialog() as course, ui.card():
+            #     ui.label('Create a Course').classes('font-bold text-lg')
+            #     ui.separator()
+            #     course_title = ui.input(label='Title').props('size=40')
+            #     course_video_desc = ui.input(label='Video Description').props('size=40')
+            #     course_video = ui.upload(auto_upload=True, max_files=1, on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
 
-                author = {app.storage.user["username"]}
-                author = str(author).replace('{', '').replace('}', '').replace("'", '')
 
-                with ui.grid(columns=2):
-                    ui.button('Publish', on_click=lambda: course_db(course_title.value, course_video_desc.value, author, course_video))
-                    ui.button('Close', on_click=course.close)
-            ui.button('Create a Course', on_click=course.open)
-
-            # BLOG DIALOG
-            with ui.dialog() as blog, ui.card():
-                ui.label('Write a Blog').classes('font-bold text-lg')
-                ui.separator()
-                blog_title = ui.input(label='Title')
-                blog_body = ui.textarea(label='Body').props('clearable')
-
-                with ui.grid(columns=2):
-                    # Insert blog_title, blog_body, and author to the database
-                    ui.button('Publish', on_click=lambda: blog_bd(blog_title.value, blog_body.value, author))
-                    ui.button('Close', on_click=blog.close)
-            ui.button('Write a Blog', on_click=blog.open)
-
-    # FOOTER
-    # with ui.footer(fixed=False).style('background-color: #3874c8'):
-    #     ui.label('FOOTER')
-
+            ui.button('Create a Course', on_click=lambda: ui.open(course))
+            ui.button('Write a Blog', on_click=lambda: ui.open(blog))
 
 # Database configuration
 db_config = {
@@ -296,11 +274,10 @@ def learner_page() -> None:
                 ui.label("Tab 2")
 
 
-
     # HEADER
     with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
         with ui.grid(columns=2).classes('items-left'):
-            ui.label("Learner Mode").classes('mt-1 text-xl')
+            ui.button(text='Learner Mode', on_click=lambda: ui.open(learner_page)).props('flat color=white').tooltip('Home')
 
         with ui.grid(columns=2).classes('items-right'):
             ui.switch(value=True, on_change=lambda: ui.open(main_page)).classes('item-right').tooltip('Toggled to Learner Mode')
@@ -314,6 +291,78 @@ def learner_page() -> None:
     # with ui.footer(fixed=False).style('background-color: #3874c8'):
     #     ui.label('FOOTER')
 
+
+@ui.page('/blog')
+def blog() -> None:
+    with ui.card().classes('w-full'):
+        with ui.row().classes('w-full justify-center font-bold text-lg'):
+            ui.label('Create a Blog')
+            ui.separator()
+        with ui.grid().classes('w-full justify-left'):
+            blog_title = ui.input(label='Title')
+            blog_body = ui.textarea(label='Body').props('clearable')
+
+            author = {app.storage.user["username"]}
+            author = str(author).replace('{', '').replace('}', '').replace("'", '')
+
+            ui.button('Publish', on_click=lambda: blog_bd(blog_title.value, blog_body.value, author))
+
+
+    # HEADER
+    with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
+        with ui.grid(columns=2).classes('items-left'):
+            ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white').tooltip('Menu')
+            ui.button(text='Creator Mode', on_click= lambda: ui.open(main_page)).props('flat color=white').tooltip('Home')
+
+        with ui.grid(columns=2).classes('items-right'):
+            ui.switch(on_change=lambda: ui.open(learner_page)).classes('item-right').tooltip('Toggled to Creator Mode')
+            with ui.button(icon='account_circle').props('flat color=white').tooltip('Account'):
+                with ui.menu():
+                    ui.menu_item(f'Logged in as: {app.storage.user["username"]}')
+                    ui.separator()
+                    ui.menu_item('Logout', lambda: (app.storage.user.clear(), ui.open('/login')))
+
+        # LEFT DRAWER
+        with ui.left_drawer(fixed=True).style('background-color: #d7e3f4').props('bordered') as left_drawer:
+            with ui.grid(rows=2):
+                ui.button('Create a Course', on_click=lambda: ui.open(course))
+                ui.button('Write a Blog', on_click=lambda: ui.open(blog))
+
+@ui.page('/course')
+def course() -> None:
+    with ui.card().classes('w-full'):
+        with ui.row().classes('w-full justify-center font-bold text-lg'):
+            ui.label('Create a Course')
+            ui.separator()
+        with ui.grid().classes('w-full justify-left'):
+            course_title = ui.input(label='Title')
+            course_video_desc = ui.input(label='Video Description')
+            course_video = ui.upload(auto_upload=True, max_files=1, on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('w-full')
+
+            author = {app.storage.user["username"]}
+            author = str(author).replace('{', '').replace('}', '').replace("'", '')
+            ui.button('Publish', on_click=lambda: course_db(course_title.value, course_video_desc.value, author, course_video))
+
+
+    # HEADER
+    with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
+        with ui.grid(columns=2).classes('items-left'):
+            ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white').tooltip('Menu')
+            ui.button(text='Creator Mode', on_click= lambda: ui.open(main_page)).props('flat color=white').tooltip('Home')
+
+        with ui.grid(columns=2).classes('items-right'):
+            ui.switch(on_change=lambda: ui.open(learner_page)).classes('item-right').tooltip('Toggled to Creator Mode')
+            with ui.button(icon='account_circle').props('flat color=white').tooltip('Account'):
+                with ui.menu():
+                    ui.menu_item(f'Logged in as: {app.storage.user["username"]}')
+                    ui.separator()
+                    ui.menu_item('Logout', lambda: (app.storage.user.clear(), ui.open('/login')))
+
+        # LEFT DRAWER
+        with ui.left_drawer(fixed=True).style('background-color: #d7e3f4').props('bordered') as left_drawer:
+            with ui.grid(rows=2):
+                ui.button('Create a Course', on_click=lambda: ui.open(course))
+                ui.button('Write a Blog', on_click=lambda: ui.open(blog))
 
 
 @ui.page('/login')
