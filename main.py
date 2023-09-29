@@ -19,6 +19,8 @@ import asyncio
 import mysql.connector
 
 grid = ui.grid()
+
+
 # Function to fetch users to be able to log in
 def db():
     # Connect to database
@@ -53,6 +55,7 @@ def db():
     cursor.close()
     cnx.close()
 
+
 # Function to create new blog
 def blog_bd(title, body, author):
     # Connect to database
@@ -77,6 +80,7 @@ def blog_bd(title, body, author):
     cnx.close()
 
     ui.notify("Data Successfully Inserted!")
+
 
 def course_db(title, body, author, video):
     # Connect to database
@@ -103,6 +107,60 @@ def course_db(title, body, author, video):
 
     ui.notify("Data Successfully Inserted!")
 
+
+def history(title, author):
+    # Connect to database
+    cnx = mysql.connector.connect(
+        user='root',
+        password='',
+        host='localhost',
+        database='project'
+    )
+
+    # Create a cursor object to interact with the database
+    cursor = cnx.cursor()
+
+    # Execute an SQL query to fetch data
+    query = "INSERT INTO history (title, author) VALUES (%s, %s)"
+    data = (title, author)
+
+    cursor.execute(query, data)
+
+    cnx.commit()
+
+    cursor.close()
+    cnx.close()
+
+
+# Define a closure to capture title and author
+def on_expand_click(title, author):
+    def print_info():
+        # Connect to database
+        cnx = mysql.connector.connect(
+            user='root',
+            password='',
+            host='localhost',
+            database='project'
+        )
+
+        # Create a cursor object to interact with the database
+        cursor = cnx.cursor()
+
+        print(title, author)
+        # Execute an SQL query to fetch data
+        query = "INSERT INTO history (title, author) VALUES (%s, %s)"
+        data = (title, author)
+
+        cursor.execute(query, data)
+
+        cnx.commit()
+
+        cursor.close()
+        cnx.close()
+
+    return print_info
+
+
 def fetch_blog_data():
     # Connect to database
     cnx = mysql.connector.connect(
@@ -116,7 +174,7 @@ def fetch_blog_data():
     cursor = cnx.cursor()
 
     # Execute an SQL query to fetch data
-    query = "SELECT title, body, author FROM blog"
+    query = "SELECT title, body, author FROM blog ORDER BY dateCreated DESC"
     cursor.execute(query)
 
     # Fetch all the rows as a list of tuples
@@ -124,18 +182,70 @@ def fetch_blog_data():
 
     for record in data:
         title, body, author = record
+
+        with ui.dialog() as blog_dialog, ui.card().classes('w-full'):
+            with ui.row().classes('w-full justify-center font-bold text-lg'):
+                ui.label(title)
+            with ui.row().classes('w-full justify-center'):
+                ui.label(author)
+            with ui.scroll_area():
+                with ui.row().classes('text-justify'):
+                    ui.label(body)
+            with ui.row().classes('w-full'):
+                ui.separator()
+                ui.button(text='Close', on_click=blog_dialog.close)
+
         with ui.card().classes('m-10 justify-center'):
             with ui.row().classes('w-full justify-center font-bold text-lg'):
                 ui.label(title)
             with ui.row().classes('w-full justify-center'):
                 ui.label(author)
-            with ui.row().classes('text-justify'):
-                ui.label(body)
+            with ui.scroll_area():
+                with ui.row().classes('text-justify'):
+                    ui.label(body)
+            with ui.row().classes('w-full text-left'):
+                ui.separator()
+                ui.button(text='Expand Blog', on_click=blog_dialog.open).on('click').on('click',
+                                                                                        on_expand_click(title, author))
 
     cursor.close()
     cnx.close()
 
+
+def activities():
+    # Connect to database
+    cnx = mysql.connector.connect(
+        user='root',
+        password='',
+        host='localhost',
+        database='project'
+    )
+
+    # Create a cursor object to interact with the database
+    cursor = cnx.cursor()
+
+    # Execute an SQL query to fetch data
+    query = "SELECT title, author FROM history ORDER BY dateCreated DESC"
+    cursor.execute(query)
+
+    # Fetch all the rows as a list of tuples
+    data = cursor.fetchall()[:30]
+
+    with ui.grid(columns=3).classes('m-5'):
+        for record in data:
+            title, author = record
+            with ui.card():
+                ui.label('Title: ' + title).classes('font-bold')
+                ui.label('Author: ' + author)
+                ui.separator()
+                ui.button('View', on_click=lambda: ui.open(learner_page))
+
+    cursor.close()
+    cnx.close()
+
+
 unrestricted_page_routes = {'/login'}
+
 
 class AuthMiddleware(BaseHTTPMiddleware):
     """This middleware restricts access to all NiceGUI pages.
@@ -150,11 +260,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 return RedirectResponse('/login')
         return await call_next(request)
 
+
 app.add_middleware(AuthMiddleware)
+
 
 @ui.page('/')
 def main_page() -> None:
-
     # MAIN CONTENT
     # Blogs and Courses Tab
     with ui.tabs().classes('w-full') as tabs:
@@ -171,13 +282,15 @@ def main_page() -> None:
                     ui.label('What is Lorem Ipsum?')
                 with ui.row().classes('w-full justify-left'):
                     ui.label('user1')
-                    ui.label("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+                    ui.label(
+                        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
 
     # HEADER
     with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
         with ui.grid(columns=2).classes('items-left'):
             ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white').tooltip('Menu')
-            ui.button(text='Creator Mode', on_click= lambda: ui.open(main_page)).props('flat color=white').tooltip('Home')
+            ui.button(text='Creator Mode', on_click=lambda: ui.open(main_page)).props('flat color=white').tooltip(
+                'Home')
 
         with ui.grid(columns=2).classes('items-right'):
             ui.switch(on_change=lambda: ui.open(learner_page)).classes('item-right').tooltip('Toggled to Creator Mode')
@@ -190,17 +303,9 @@ def main_page() -> None:
     # LEFT DRAWER
     with ui.left_drawer(fixed=True).style('background-color: #d7e3f4').props('bordered') as left_drawer:
         with ui.grid(rows=2):
-            # # COURSE DIALOG
-            # with ui.dialog() as course, ui.card():
-            #     ui.label('Create a Course').classes('font-bold text-lg')
-            #     ui.separator()
-            #     course_title = ui.input(label='Title').props('size=40')
-            #     course_video_desc = ui.input(label='Video Description').props('size=40')
-            #     course_video = ui.upload(auto_upload=True, max_files=1, on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
-
-
             ui.button('Create a Course', on_click=lambda: ui.open(course))
             ui.button('Write a Blog', on_click=lambda: ui.open(blog))
+
 
 # Database configuration
 db_config = {
@@ -212,11 +317,12 @@ db_config = {
 
 running_query: Optional[asyncio.Task] = None
 
+
 @ui.page('/subpage')
 def learner_page() -> None:
     with ui.tabs().classes('w-full') as tabs:
         forYou_tab = ui.tab('For You')
-        activities_tab = ui.tab('Activities')
+        activities_tab = ui.tab('Recent Activities')
 
     with ui.tab_panels(tabs, value=forYou_tab).classes('w-full'):
         with ui.tab_panel(forYou_tab):
@@ -231,7 +337,6 @@ def learner_page() -> None:
                 async with aiomysql.create_pool(**db_config) as pool:
                     async with pool.acquire() as conn:
                         async with conn.cursor(aiomysql.DictCursor) as cursor:
-                            # Execute a MySQL query to search for cocktails
                             text = e.value
                             query = f"SELECT title, body, author FROM blog WHERE title LIKE '%{text}%' OR author LIKE '%{text}%'"
                             await cursor.execute(query)
@@ -246,20 +351,37 @@ def learner_page() -> None:
                                         with ui.row().classes('w-full justify-center font-bold text-lg'):
                                             ui.label(f'Search Results for "{e.value}"')
                                     for blog in await cursor.fetchall():
-                                        with ui.card().classes('m-1 justify-center'):
+                                        with ui.dialog() as blog_dialog, ui.card().classes('w-full'):
                                             with ui.row().classes('w-full justify-center font-bold text-lg'):
                                                 ui.label(blog['title'])
                                             with ui.row().classes('w-full justify-center'):
                                                 ui.label(blog['author'])
+                                            with ui.scroll_area():
+                                                with ui.row().classes('text-justify'):
+                                                    ui.label(blog['body'])
+                                            with ui.row().classes('w-full'):
+                                                ui.separator()
+                                                ui.button(text='Close', on_click=blog_dialog.close)
+
+                                        with ui.card().classes('m-1 justify-center'):
+                                            with ui.row().classes('w-full justify-center font-bold text-lg'):
+                                                a = ui.label(blog['title'])
                                             with ui.row().classes('w-full justify-center'):
-                                                ui.label(blog['body'])
-
-
+                                                ui.label(blog['author'])
+                                            with ui.scroll_area():
+                                                with ui.row().classes('w-full justify-center'):
+                                                    ui.label(blog['body'])
+                                            with ui.row().classes('w-full text-left'):
+                                                ui.separator()
+                                                ui.button(text='Expand Blog', on_click=blog_dialog.open).on('click',
+                                                                                                            on_expand_click(
+                                                                                                                blog[
+                                                                                                                    'title'],
+                                                                                                                blog[
+                                                                                                                    'author']))
                 running_query = None
 
-                # You can put the search_field here
-
-            search_field = ui.input(placeholder='Search for title or author...' ,on_change=search) \
+            search_field = ui.input(placeholder='Search for title or author...', on_change=search) \
                 .props('autofocus outlined rounded item-aligned input-class="ml-3"') \
                 .classes('self-center transition-all')
             grid = ui.grid()
@@ -268,28 +390,23 @@ def learner_page() -> None:
                 ui.separator().classes('mt-10 h-50')
                 fetch_blog_data()
 
-
         with ui.tab_panel(activities_tab):
-            with ui.card():
-                ui.label("Tab 2")
-
+            activities()
 
     # HEADER
     with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
         with ui.grid(columns=2).classes('items-left'):
-            ui.button(text='Learner Mode', on_click=lambda: ui.open(learner_page)).props('flat color=white').tooltip('Home')
+            ui.button(text='Learner Mode', on_click=lambda: ui.open(learner_page)).props('flat color=white').tooltip(
+                'Home')
 
         with ui.grid(columns=2).classes('items-right'):
-            ui.switch(value=True, on_change=lambda: ui.open(main_page)).classes('item-right').tooltip('Toggled to Learner Mode')
+            ui.switch(value=True, on_change=lambda: ui.open(main_page)).classes('item-right').tooltip(
+                'Toggled to Learner Mode')
             with ui.button(icon='account_circle').props('flat color=white').tooltip('Account'):
                 with ui.menu():
                     ui.menu_item(f'Logged in as: {app.storage.user["username"]}')
                     ui.separator()
                     ui.menu_item('Logout', lambda: (app.storage.user.clear(), ui.open('/login')))
-
-    # FOOTER
-    # with ui.footer(fixed=False).style('background-color: #3874c8'):
-    #     ui.label('FOOTER')
 
 
 @ui.page('/blog')
@@ -307,12 +424,12 @@ def blog() -> None:
 
             ui.button('Publish', on_click=lambda: blog_bd(blog_title.value, blog_body.value, author))
 
-
     # HEADER
     with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
         with ui.grid(columns=2).classes('items-left'):
             ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white').tooltip('Menu')
-            ui.button(text='Creator Mode', on_click= lambda: ui.open(main_page)).props('flat color=white').tooltip('Home')
+            ui.button(text='Creator Mode', on_click=lambda: ui.open(main_page)).props('flat color=white').tooltip(
+                'Home')
 
         with ui.grid(columns=2).classes('items-right'):
             ui.switch(on_change=lambda: ui.open(learner_page)).classes('item-right').tooltip('Toggled to Creator Mode')
@@ -328,6 +445,7 @@ def blog() -> None:
                 ui.button('Create a Course', on_click=lambda: ui.open(course))
                 ui.button('Write a Blog', on_click=lambda: ui.open(blog))
 
+
 @ui.page('/course')
 def course() -> None:
     with ui.card().classes('w-full'):
@@ -337,18 +455,20 @@ def course() -> None:
         with ui.grid().classes('w-full justify-left'):
             course_title = ui.input(label='Title')
             course_video_desc = ui.input(label='Video Description')
-            course_video = ui.upload(auto_upload=True, max_files=1, on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('w-full')
+            course_video = ui.upload(auto_upload=True, max_files=1,
+                                     on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('w-full')
 
             author = {app.storage.user["username"]}
             author = str(author).replace('{', '').replace('}', '').replace("'", '')
-            ui.button('Publish', on_click=lambda: course_db(course_title.value, course_video_desc.value, author, course_video))
-
+            ui.button('Publish',
+                      on_click=lambda: course_db(course_title.value, course_video_desc.value, author, course_video))
 
     # HEADER
     with ui.header(elevated=True).style('background-color: #3874c8').classes('justify-between'):
         with ui.grid(columns=2).classes('items-left'):
             ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white').tooltip('Menu')
-            ui.button(text='Creator Mode', on_click= lambda: ui.open(main_page)).props('flat color=white').tooltip('Home')
+            ui.button(text='Creator Mode', on_click=lambda: ui.open(main_page)).props('flat color=white').tooltip(
+                'Home')
 
         with ui.grid(columns=2).classes('items-right'):
             ui.switch(on_change=lambda: ui.open(learner_page)).classes('item-right').tooltip('Toggled to Creator Mode')
@@ -382,4 +502,5 @@ def login() -> Optional[RedirectResponse]:
         password = ui.input('Password', password=True, password_toggle_button=True).on('keydown.enter', try_login)
         ui.button('Log in', on_click=try_login)
 
-ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED', title='Project')
+
+ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED', title='Project', on_air=True)
