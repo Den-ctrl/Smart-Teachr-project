@@ -114,3 +114,19 @@ To run the Smart-Teachr-project, follow these steps:
    ```bash
    python main.py
    ```
+
+4. **Access the Application**:
+
+   After running the main.py script, you should be able to access the application through your web browser by navigating to the appropriate URL (e.g., http://localhost:8000).
+
+5. **Login Credentials**:
+
+   When prompted for login credentials, use the following default values:
+
+    - Username: user1
+    - Password: pass1
+
+    You can change these credentials as needed for your application.
+
+   
+
