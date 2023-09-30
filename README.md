@@ -48,3 +48,69 @@ This is a Python application that utilizes several modules and tools to achieve 
 ### MySQL
 - Description: MySQL is an open-source relational database management system used for storing and retrieving data.
 - Website: [MySQL](https://www.mysql.com/)
+
+## Database Setup
+
+To get started with the Smart-Teachr-project, follow these steps to import the necessary SQL file into your MySQL database.
+
+1. **Download the SQL file for our project database**: [project.sql](https://github.com/Den-ctrl/Smart-Teachr-project/blob/main/project.sql).
+
+2. **Import SQL File**:
+
+   - Open a terminal and log in to MySQL:
+
+     ```bash
+     mysql -u username -p
+     ```
+
+     Replace `username` with your MySQL username.
+
+   - Create a new database (if not already created):
+
+     ```sql
+     CREATE DATABASE project;
+     ```
+
+   - Use the newly created database:
+
+     ```sql
+     USE project;
+     ```
+
+   - Import the SQL file:
+
+     ```bash
+     mysql -u username -p project < path/to/project.sql
+     ```
+
+## Running the Application
+
+To run the Smart-Teachr-project, follow these steps:
+
+1. **Navigate to the Project Directory**:
+
+   Open a command prompt (CMD) or terminal and use the `cd` command to navigate to the directory where you have cloned or downloaded the project. For example:
+
+   ```bash
+   cd path/to/smart-teachr-project
+
+2. **Activate the Virtual Environment**:
+
+   If you're using a virtual environment (venv), activate it by running the appropriate activation command. For example, on Windows:
+
+   ```bash
+   cd path/to/smart-teachr-project
+   ```
+   
+   On macOS and Linux:
+   ```bash
+   source venv/bin/activate
+   ```
+
+3. **Run the main.py Script**:
+
+   Once the virtual environment is activated, you can run the main.py script. Use the following command:
+
+   ```bash
+   python main.py
+   ```
