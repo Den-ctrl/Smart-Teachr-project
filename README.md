@@ -7,22 +7,37 @@ This is a Python application that utilizes several modules and tools to achieve 
 ### FastAPI
 - Description: FastAPI is a modern, fast web framework for building APIs with Python 3.6+ based on standard Python type hints.
 - GitHub Repository: [FastAPI on GitHub](https://github.com/tiangolo/fastapi)
+- Installation: Use the following command to install FastAPI:
+  ```bash
+  pip install fastapi
 
 ### Starlette
 - Description: Starlette is a lightweight ASGI framework/toolkit for building high-performance asyncio services.
 - GitHub Repository: [Starlette on GitHub](https://github.com/encode/starlette)
+- Installation: Use the following command to install Starlette:
+  ```bash
+  pip install starlette
 
 ### NiceGUI
 - Description: NiceGUI is a Python library for creating interactive web-based user interfaces.
 - GitHub Repository: [NiceGUI on GitHub](https://github.com/nicegui/nicegui)
+- Installation: Use the following command to install NiceGUI:
+  ```bash
+  pip install nicegui
 
 ### aioMySQL
 - Description: aioMySQL is an asynchronous MySQL client library for Python.
 - GitHub Repository: [aioMySQL on GitHub](https://github.com/aio-libs/aiomysql)
+- Installation: Use the following command to install aioMySQL:
+  ```bash
+  pip install aiomysql
 
 ### MySQL Connector
 - Description: MySQL Connector/Python is a MySQL driver for Python.
 - GitHub Repository: [MySQL Connector/Python on GitHub](https://github.com/mysql/mysql-connector-python)
+- Installation: Use the following command to install MySQL Connector:
+  ```bash
+  pip install mysql-connector-python
 
 ## Tools Used
 
